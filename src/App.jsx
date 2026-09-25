@@ -52,13 +52,15 @@ const Heading = ({ children, light }) => (
 export default function NikkahWebsite() {
   const [menu, setMenu] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const audioRef = useRef(null);
   const left = useCountdown(SITE.date);
   const when = new Date(SITE.date);
   const dateText = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(when);
   const title = `Nikkah of ${SITE.groom.name} & ${SITE.bride.name}`;
 
-  const toggleSong = () => {
+  const toggleSong = (e) => {
+    if (e) e.stopPropagation();
     const a = audioRef.current;
     if (!a) return;
     if (a.paused) {
@@ -69,33 +71,99 @@ export default function NikkahWebsite() {
     }
   };
 
+  const toggleFullscreen = (e) => {
+    if (e) e.stopPropagation();
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+      } else if (elem.webkitRequestFullscreen) {
+        try { elem.webkitRequestFullscreen(); } catch (err) {}
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        try { document.webkitExitFullscreen(); } catch (err) {}
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement || document.webkitFullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
     a.volume = 0.7;
 
+    const requestFullscreenSafe = () => {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {});
+        } else if (elem.webkitRequestFullscreen) {
+          try { elem.webkitRequestFullscreen(); } catch (err) {}
+        }
+      }
+    };
+
+    const handleFirstInteraction = () => {
+      // 1. Enter full screen on touch
+      requestFullscreenSafe();
+
+      // 2. Play audio on touch
+      if (a.paused) {
+        a.play()
+          .then(() => {
+            setPlaying(true);
+            removeListeners();
+          })
+          .catch((err) => {
+            console.log("Audio waiting for user gesture:", err);
+          });
+      } else {
+        removeListeners();
+      }
+    };
+
+    const events = ["click", "touchend", "touchstart", "pointerup", "keydown"];
+
+    const addListeners = () => {
+      events.forEach((evt) => {
+        window.addEventListener(evt, handleFirstInteraction, { capture: true, passive: true });
+      });
+    };
+
+    const removeListeners = () => {
+      events.forEach((evt) => {
+        window.removeEventListener(evt, handleFirstInteraction, true);
+      });
+    };
+
     // Try playing immediately when opened
     a.play()
-      .then(() => setPlaying(true))
-      .catch(() =>  {
-        // If autoplay is prevented by browser policy, play on first user interaction
+      .then(() => {
+        setPlaying(true);
+      })
+      .catch(() => {
+        // Autoplay blocked by browser policy, listen for first touch anywhere on screen
         setPlaying(false);
-
-        const events = ["click", "touchstart", "scroll", "keydown", "pointerdown"];
-        const handleFirstInteraction = () => {
-          if (a.paused) {
-            a.play().then(() => setPlaying(true)).catch(() => {});
-          }
-          events.forEach((evt) => {
-            window.removeEventListener(evt, handleFirstInteraction, true);
-          });
-        };
-
-        events.forEach((evt) => {
-          window.addEventListener(evt, handleFirstInteraction, { capture: true, once: true });
-        });
-        
+        addListeners();
       });
+
+    return () => {
+      removeListeners();
+    };
   }, []);
 
   const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=20261231/20270101&location=${encodeURIComponent(SITE.venue + ", " + SITE.address)}`;
@@ -121,7 +189,7 @@ export default function NikkahWebsite() {
           <ul className="hidden gap-8 text-lg md:flex">
             {NAV.map(([id, label]) => (<li key={id}><a href={`#${id}`} className={`hover:text-[#e6c86e] ${focus}`}>{label}</a></li>))}
           </ul>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={toggleSong}
               aria-label={playing ? "Pause music" : "Play music"}
@@ -140,6 +208,22 @@ export default function NikkahWebsite() {
                   <circle cx="6" cy="18" r="3" />
                   <circle cx="18" cy="16" r="3" />
                   <line x1="2" y1="2" x2="22" y2="22" />
+                </svg>
+              )}
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              className={`flex h-10 w-10 items-center justify-center rounded-full border border-[#c9a84c] text-[#e6c86e] transition hover:bg-[#c9a84c]/20 ${focus}`}
+            >
+              {isFullscreen ? (
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
                 </svg>
               )}
             </button>
