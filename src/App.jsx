@@ -51,7 +51,7 @@ const Heading = ({ children, light }) => (
 
 export default function NikkahWebsite() {
   const [menu, setMenu] = useState(false);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const audioRef = useRef(null);
   const left = useCountdown(SITE.date);
   const when = new Date(SITE.date);
@@ -77,7 +77,7 @@ export default function NikkahWebsite() {
     // Try playing immediately when opened
     a.play()
       .then(() => setPlaying(true))
-      .catch(() => {
+      .catch(() =>  {
         // If autoplay is prevented by browser policy, play on first user interaction
         setPlaying(false);
 
@@ -94,8 +94,6 @@ export default function NikkahWebsite() {
         events.forEach((evt) => {
           window.addEventListener(evt, handleFirstInteraction, { capture: true, once: true });
         });
-
-        console.log("touch start");
         
       });
   }, []);
