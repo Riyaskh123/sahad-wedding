@@ -8,7 +8,7 @@ const SITE = {
   time: "", // e.g. "11:00 AM" (shown only when filled)
   venue: "Golden Gate Santyaru",
   address: "Santyar, Panaje, near Puttur, Karnataka, India",
-  mapUrl: "https://maps.apple/p/HUNuGuP_09pwr3",
+  mapUrl: "https://maps.app.goo.gl/AK34PBQFownEQSgG8",
   whatsapp: "919845346507", // RSVP number with country code, e.g. "919XXXXXXXXX" (button hidden if empty)
   photo: "", // optional couple photo, e.g. "/couple.jpg"
   song: "/bg-music.mp3", // put your audio file in /public
@@ -51,28 +51,50 @@ const Heading = ({ children, light }) => (
 
 export default function NikkahWebsite() {
   const [menu, setMenu] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const audioRef = useRef(null);
   const left = useCountdown(SITE.date);
   const when = new Date(SITE.date);
   const dateText = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(when);
   const title = `Nikkah of ${SITE.groom.name} & ${SITE.bride.name}`;
 
-  // const enter = () => {
-  //   const a = audioRef.current;
-  //   setEntered(true);
-  //   if (a) { a.volume = 0.6; a.play().then(() => setPlaying(true)).catch(() => setPlaying(false)); }
-  // };
-  // const toggleSong = () => {
-  //   const a = audioRef.current;
-  //   if (!a) return;
-  //   if (a.paused) a.play().then(() => setPlaying(true)).catch(() => {});
-  //   else { a.pause(); setPlaying(false); }
-  // };
-
-    useEffect(() => {
+  const toggleSong = () => {
     const a = audioRef.current;
-    a.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    if (!a) return;
+    if (a.paused) {
+      a.play().then(() => setPlaying(true)).catch(() => {});
+    } else {
+      a.pause();
+      setPlaying(false);
+    }
+  };
 
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.volume = 0.6;
+
+    // Try playing immediately when opened
+    a.play()
+      .then(() => setPlaying(true))
+      .catch(() => {
+        // If autoplay is prevented by browser policy, play on first user interaction
+        setPlaying(false);
+
+        const events = ["click", "touchstart", "scroll", "keydown", "pointerdown"];
+        const handleFirstInteraction = () => {
+          if (a.paused) {
+            a.play().then(() => setPlaying(true)).catch(() => {});
+          }
+          events.forEach((evt) => {
+            window.removeEventListener(evt, handleFirstInteraction, true);
+          });
+        };
+
+        events.forEach((evt) => {
+          window.addEventListener(evt, handleFirstInteraction, { capture: true, once: true });
+        });
+      });
   }, []);
 
   const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=20261231/20270101&location=${encodeURIComponent(SITE.venue + ", " + SITE.address)}`;
@@ -80,25 +102,46 @@ export default function NikkahWebsite() {
   const rsvpUrl = () => `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(`Assalamu alaikum, I would like to confirm my attendance at the nikkah of ${SITE.groom.name} & ${SITE.bride.name}.`)}`;
 
   return (
-    <div className={`f-serif bg-[#0a3428] text-[#f4ecd8] h-screen`}>
+    <div className={`f-serif bg-[#0a3428] text-[#f4ecd8] min-h-screen`}>
       <style>{css}</style>
-      <audio ref={audioRef} src={SITE.song} loop preload="auto" />
-
-      {/* Welcome screen: the tap that starts the song */}
-      {/* <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#062419] px-6 text-center transition-opacity duration-1000 ${entered ? "pointer-events-none opacity-0" : "opacity-100"}`} style={{ backgroundImage: PATTERN }} aria-hidden={entered}>
-        <p lang="ar" dir="rtl" className="f-ar text-4xl leading-loose text-[#e6c86e]">{BISMILLAH}</p>
-        <h1 className="mt-6 text-4xl italic">{SITE.groom.name} &amp; {SITE.bride.name}</h1>
-        <button onClick={enter} className={`mt-10 ${btnGold}`}>Enter website</button>
-      </div> */}
+      <audio
+        ref={audioRef}
+        src={SITE.song}
+        loop
+        preload="auto"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+      />
 
       {/* Top navigation */}
       <header className="fixed inset-x-0 top-0 z-40 border-b border-[#c9a84c]/30 bg-[#062419]/90 backdrop-blur">
         <nav className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
-          <a href="#home" className={`text-2xl italic text-[#e6c86e] ${focus}`}>{SITE.groom.name} &amp; {SITE.bride.name.split(" ")[0]}</a>
+          <a href="#home" className={`text-2xl italic text-[#e6c86e] ${focus}`}>{SITE.groom.name} &amp; {SITE.bride.name.split(" ")[1]}</a>
           <ul className="hidden gap-8 text-lg md:flex">
             {NAV.map(([id, label]) => (<li key={id}><a href={`#${id}`} className={`hover:text-[#e6c86e] ${focus}`}>{label}</a></li>))}
           </ul>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleSong}
+              aria-label={playing ? "Pause music" : "Play music"}
+              title={playing ? "Pause music" : "Play music"}
+              className={`flex h-10 w-10 items-center justify-center rounded-full border border-[#c9a84c] text-[#e6c86e] transition hover:bg-[#c9a84c]/20 ${focus}`}
+            >
+              {playing ? (
+                <svg viewBox="0 0 24 24" className="h-5 w-5 animate-pulse" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18V5l12-2v13" />
+                  <circle cx="6" cy="18" r="3" />
+                  <circle cx="18" cy="16" r="3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-5 w-5 opacity-60" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18V5l12-2v13" />
+                  <circle cx="6" cy="18" r="3" />
+                  <circle cx="18" cy="16" r="3" />
+                  <line x1="2" y1="2" x2="22" y2="22" />
+                </svg>
+              )}
+            </button>
             <button onClick={() => setMenu(!menu)} aria-label="Menu" aria-expanded={menu} className={`flex h-10 w-10 items-center justify-center rounded-full border border-[#c9a84c] text-[#e6c86e] md:hidden ${focus}`}>
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d={menu ? "M6 6l12 12M18 6L6 18" : "M4 7h16M4 12h16M4 17h16"} /></svg>
             </button>
