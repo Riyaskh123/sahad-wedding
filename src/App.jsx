@@ -8,8 +8,8 @@ const SITE = {
   time: "", // e.g. "11:00 AM" (shown only when filled)
   venue: "Golden Gate Santyaru",
   address: "Santyar, Panaje, near Puttur, Karnataka, India",
-  mapUrl: "https://maps.app.goo.gl/AK34PBQFownEQSgG8",
-  whatsapp: "919845346507", // RSVP number with country code, e.g. "919XXXXXXXXX" (button hidden if empty)
+  mapUrl: "https://maps.app.goo.gl/TdGLy1K7eDyLE8536?g_st=iwb",
+  whatsapp: "919980340288", // RSVP number with country code, e.g. "919XXXXXXXXX" (button hidden if empty)
   photo: "", // optional couple photo, e.g. "/couple.jpg"
   song: "/bg-music.mp3", // put your audio file in /public
 };
