@@ -51,7 +51,7 @@ const Heading = ({ children, light }) => (
 
 export default function NikkahWebsite() {
   const [menu, setMenu] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(true);
   const audioRef = useRef(null);
   const left = useCountdown(SITE.date);
   const when = new Date(SITE.date);
@@ -72,7 +72,7 @@ export default function NikkahWebsite() {
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
-    a.volume = 0.6;
+    a.volume = 0.7;
 
     // Try playing immediately when opened
     a.play()
@@ -94,6 +94,9 @@ export default function NikkahWebsite() {
         events.forEach((evt) => {
           window.addEventListener(evt, handleFirstInteraction, { capture: true, once: true });
         });
+
+        console.log("touch start");
+        
       });
   }, []);
 
