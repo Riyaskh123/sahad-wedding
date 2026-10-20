@@ -8,7 +8,7 @@ const SITE = {
   time: "", // e.g. "11:00 AM" (shown only when filled)
   venue: "Golden Gate Santyaru",
   address: "Santyar, Panaje, near Puttur, Karnataka, India",
-  mapUrl: "https://maps.app.goo.gl/TdGLy1K7eDyLE8536?g_st=iwb",
+  mapUrl: "https://maps.app.goo.gl/YsxnEq4gmnVzq2S87",
   whatsapp: "919980340288", // RSVP number with country code, e.g. "919XXXXXXXXX" (button hidden if empty)
   photo: "", // optional couple photo, e.g. "/couple.jpg"
   song: "/bg-music.mp3", // put your audio file in /public
@@ -238,7 +238,7 @@ export default function NikkahWebsite() {
           </ul>
         )}
       </header>
-      <div className="absolute inset-0 z-0 top-0 left-0 h-full w-full opacity-40" style={{ backgroundImage: "url(/homebg.jpeg)", backgroundPosition: "center top", backgroundRepeat: "no-repeat", backgroundSize: "cover" }}></div>
+      <div className="absolute inset-0 z-0 top-0 left-0 h-full w-full opacity-40" style={{ backgroundImage: "url(/homebg.jpg)", backgroundPosition: "center top", backgroundRepeat: "no-repeat", backgroundSize: "cover" }}></div>
       <main className="rise">
         {/* Home */}
         <section id="home" className="relative flex min-h-screen flex-col items-center justify-center px-6 pb-16 pt-28 text-center" style={{ backgroundImage: PATTERN }}>
