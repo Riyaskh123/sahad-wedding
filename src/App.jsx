@@ -5,7 +5,7 @@ const SITE = {
   groom: { name: "Sahad", parents: "Abdul Majeed & K M Fathima" },
   bride: { name: "Fathimath Thamseera", parents: "Mohammed & Zubaida" },
   date: "2026-12-31T00:00:00",
-  time: "", // e.g. "11:00 AM" (shown only when filled)
+  time: "11:30 AM", // e.g. "11:00 AM" (shown only when filled)
   venue: "Golden Gate Santyaru",
   address: "Santyar, Panaje, near Puttur, Karnataka, India",
   mapUrl: "https://maps.app.goo.gl/YsxnEq4gmnVzq2S87",
